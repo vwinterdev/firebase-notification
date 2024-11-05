@@ -16,7 +16,6 @@ firebase.initializeApp(firebaseConfig);
 firebase.messaging();
 
 self.addEventListener('push', (event) => {
-    console.log('Push событие получено:', event);
     if (event.data) {
         const data = event.data.json();
         const notificationTitle = data.notification.title;
@@ -24,9 +23,6 @@ self.addEventListener('push', (event) => {
         body: data.notification.body,
         icon: '/favicon.ico',
         };
-
-        // Показ уведомления
-        console.log(self.registration.showNotification)
         self.registration.showNotification(notificationTitle, notificationOptions);
     }
 

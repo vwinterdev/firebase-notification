@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { initializeApp } from "firebase/app";
 import { getToken, getMessaging } from "firebase/messaging";
 const firebaseConfig = {
@@ -17,17 +17,30 @@ const token = ref('');
 const currentTitle = ref('');
 const currentText = ref('');
 const currentToken = ref('');
-(async () => {
-  try {
+
+const notificationMounted = async () => {
     const swRegistration = await navigator.serviceWorker.register('/firebase-notification/firebase-messaging-sw.js');
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
     token.value = await getToken(messaging, { vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: swRegistration });
+}
 
-  } catch (error) {
-    alert('need enable notifications!')
+const interval = ref(null);
+
+const pollingNotification = () => {
+  console.log('1')
+  if(Notification.permission === "granted"){
+    notificationMounted()
+    if(interval.value) clearInterval(interval.value)
+  } else {
+    Notification.requestPermission()
   }
-})()
+  
+  if(!interval.value){
+    interval.value = setInterval(pollingNotification, 10000)
+  }
+};
+
 
 
 const sendNotification = () => {
@@ -49,17 +62,24 @@ const clipboard = () => {
   navigator.clipboard.writeText(token.value);
 }
 
+onMounted(() => {
+  pollingNotification()
+});
+
 </script>
 
 <template>
   <div class="wrapper">
 
-      <div class="token-text" @click="clipboard()" title="СКОПИРОВАТЬ ТОКЕН">
+      <div v-if="token" class="token-text" @click="clipboard()" title="СКОПИРОВАТЬ ТОКЕН">
         Tокен устройства:
         <br />
         <strong>
           {{ token  }}
         </strong>
+      </div>
+      <div v-else>
+        Загрузка...
       </div>
       <br />
       <br />
