@@ -25,7 +25,7 @@ const notificationMounted = async () => {
     token.value = await getToken(messaging, { vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: swRegistration });
 }
 
-const interval = ref(null);
+const interval = ref<ReturnType<typeof setInterval> | null>(null);
 
 const pollingNotification = () => {
   console.log('1')
