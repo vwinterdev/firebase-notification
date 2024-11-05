@@ -1,4 +1,4 @@
-<script setup lang="js">
+<script setup lang="ts">
 import { ref } from 'vue'
 import { initializeApp } from "firebase/app";
 import { getToken, getMessaging } from "firebase/messaging";
