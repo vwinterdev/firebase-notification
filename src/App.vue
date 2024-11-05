@@ -1,7 +1,7 @@
-<script setup lang="ts">
+<script setup lang="js">
+import { ref } from 'vue'
 import { initializeApp } from "firebase/app";
 import { getToken, getMessaging } from "firebase/messaging";
-
 const firebaseConfig = {
   apiKey: "AIzaSyCKcRQNdPtVIdYy-ZYLK0PvcYHhm85LRJk",
   authDomain: "notification-31228.firebaseapp.com",
@@ -13,34 +13,123 @@ const firebaseConfig = {
 };
 const FIREBASE_VAPID_KEY = 'BB9BiqPfKEWleyHgX8MnXSk6PGUV5m0ltzA58OFMYXKrpjK9MKx5MqLbxabjBB6qJY4Q9H_2Jdsc-z4I-n9uAnI';
 
+const token = ref('');
+const currentTitle = ref('');
+const currentText = ref('');
+const currentToken = ref('');
 (async () => {
   try {
     const swRegistration = await navigator.serviceWorker.register('/firebase-notification/firebase-messaging-sw.js');
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
-    const currentToken =  await getToken(messaging, { vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: swRegistration })
-    console.log(currentToken)
-    return currentToken 
+    token.value = await getToken(messaging, { vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: swRegistration });
+
   } catch (error) {
     alert('need enable notifications!')
   }
 })()
 
 
+const sendNotification = () => {
+  if(!token.value) return 
 
+  fetch('https://winter-dev.ru', { 
+    method: 'post', 
+    headers: {
+      'Content-Type': 'application/json',
+    }, 
+    body: JSON.stringify({
+      token: currentToken.value || token.value,
+      text: currentText.value,
+      title: currentTitle.value
+    })})
+}
 
-
-
+const clipboard = () => {
+  navigator.clipboard.writeText(token.value);
+}
 
 </script>
 
 <template>
-  <button>
-    send
-  </button>
-  
+  <div class="wrapper">
+
+      <div class="token-text" @click="clipboard()" title="СКОПИРОВАТЬ ТОКЕН">
+        Tокен устройства:
+        <br />
+        <strong>
+          {{ token  }}
+        </strong>
+      </div>
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <div class="form">
+        <div class="input">
+          <label for="title">Title</label>
+          <input placeholder="шапка сообщения" id="title" v-model="currentTitle" />
+        </div>
+        
+        <div class="input">
+          <label for="text">Text</label>
+          <textarea placeholder="тело сообщения" id="text" v-model="currentText" />
+        </div>
+
+        <div class="input">
+          <label for="token">Token</label>
+          <textarea :placeholder="token" id="token" v-model="currentToken" />
+        </div>
+        <button class="button-send"  @click="sendNotification()">
+          Отправить сообщение
+        </button>
+      </div>
+  </div>
+
+
+ 
 </template>
 
 <style scoped>
-
+*{
+  box-sizing: border-box;
+}
+.wrapper{
+  max-width: 1200px;
+  margin: 0px auto;
+}
+.token-text{
+  cursor: pointer;
+}
+.token-text:hover > strong{
+  opacity: 0.7;
+}
+.form{
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+.input{
+  width: 100%;
+}
+.input > label {
+  display: block;
+  margin-bottom: 20px;
+}
+.input > input,textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+}
+.button-send{
+  width: 100%;
+  display: block;
+  background: blue;
+  padding: 12px;
+  border-radius: 12px;
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
 </style>
