@@ -66,6 +66,29 @@ onMounted(() => {
   pollingNotification()
 });
 
+const tokens = ref([])
+const adding_token = ref('') 
+const addTokenToTokens = () => {
+  if(!adding_token.value) return alert('Пустое значение')
+  tokens.value.push(adding_token.value)
+  adding_token.value = ''
+}
+
+const sendNotifications = () => {
+  if(!token.value) return 
+
+  fetch('http://localhost:3333', { 
+    method: 'post', 
+    headers: {
+      'Content-Type': 'application/json',
+    }, 
+    body: JSON.stringify({
+      isMany: true,
+      token: tokens.value,
+      text: currentText.value,
+      title: currentTitle.value
+    })})
+}
 </script>
 
 <template>
@@ -105,6 +128,33 @@ onMounted(() => {
           Отправить сообщение
         </button>
       </div>
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <ol>
+        <li v-for="(token, index) of tokens" :key="index">
+          {{ token }}
+        </li>
+      </ol>
+      <div class="input">
+        <label for="token2">Токен</label>
+        <textarea  id="token2" v-model="adding_token" />
+      </div>
+      <br />
+      <button class="button-send"  @click="addTokenToTokens()">
+        Добавить
+      </button>
+      <br />
+      <button class="button-send" @click="sendNotifications()" >
+        Отправить
+      </button>
   </div>
 
 

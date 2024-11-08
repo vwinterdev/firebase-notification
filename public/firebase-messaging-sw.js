@@ -16,15 +16,24 @@ firebase.initializeApp(firebaseConfig);
 firebase.messaging();
 
 self.addEventListener('push', (event) => {
+    console.log({ event })
     if (event.data) {
         const data = event.data.json();
         const notificationTitle = data.notification.title;
         const notificationOptions = {
-        body: data.notification.body,
-        icon: '/favicon.ico',
+            body: data.notification.body,
+            icon: 'https://cabinet.one/favicon.ico',
         };
+
+
         self.registration.showNotification(notificationTitle, notificationOptions);
     }
 
 });
-  
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    event.waitUntil(
+      clients.openWindow('https://www.google.com')
+    );
+  });
